@@ -21,6 +21,13 @@ Used libraries
 -	[libwlocate](http://sourceforge.net/projects/libwlocate/) (included)
 
 
+Changes
+-------
+
+0.0.2 - Felix Knecht added offline support
+
+0.0.1 - Initial version by @mar-v-in with online support
+
 License
 -------
 libwlocate is GPLv3, so is OpenWlanMapNlpBackend.
