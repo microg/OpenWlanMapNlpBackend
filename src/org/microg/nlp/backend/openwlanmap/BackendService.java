@@ -1,40 +1,92 @@
 package org.microg.nlp.backend.openwlanmap;
 
-import android.content.Context;
-import android.location.Location;
-import android.util.Log;
-import com.vwp.libwlocate.WLocate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.microg.nlp.api.LocationBackendService;
 import org.microg.nlp.api.LocationHelper;
+import org.microg.nlp.backend.openwlanmap.local.WifiLocationFile;
+import org.microg.nlp.backend.openwlanmap.local.WifiReceiver;
+import org.microg.nlp.backend.openwlanmap.local.WifiReceiver.WifiReceivedCallback;
+
+import android.content.Context;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.location.Location;
+import android.net.wifi.WifiManager;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
+import com.vwp.libwlocate.WLocate;
 
 public class BackendService extends LocationBackendService {
 	private static final String TAG = BackendService.class.getName();
 	private WLocate wLocate;
+	private WifiLocationFile wifiLocationFile;
+	private WifiReceiver wifiReceiver;
 
 	@Override
 	protected void onOpen() {
-		if (wLocate == null) {
-			wLocate = new MyWLocate(this);
+		Log.d(TAG, "onOpen");
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		Configuration.fillFromPrefs(sharedPrefs);
+		sharedPrefs.registerOnSharedPreferenceChangeListener(Configuration.listener);
+		
+		if (Configuration.networkAllowed) {
+			if (wLocate == null) {
+				wLocate = new MyWLocate(this);
+			} else {
+				wLocate.doResume();
+			}
 		} else {
-			wLocate.doResume();
+			openDatabase();
+			if (wifiReceiver == null) {
+				wifiReceiver = new WifiReceiver(this, new WifiDBResolver());
+			}
+			registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));  
 		}
 	}
 
 	@Override
 	protected void onClose() {
+		Log.d(TAG, "onClose");
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPrefs.unregisterOnSharedPreferenceChangeListener(Configuration.listener);
+		
 		if (wLocate != null) {
 			wLocate.doPause();
 		}
+		if (wifiReceiver != null) {
+			unregisterReceiver(wifiReceiver);
+		}
+		
 	}
 
 	@Override
 	protected Location update() {
+		Log.d(TAG, "update");
 		if (wLocate != null) {
+			Log.d(TAG, "Requesting location from net");
 			wLocate.wloc_request_position(WLocate.FLAG_NO_GPS_ACCESS);
+			return null;
 		}
+		
+		if (wifiReceiver != null) {
+			Log.d(TAG, "Requesting location from db");
+			wifiReceiver.startScan();
+		}
+		
 		return null;
 	}
 
+	private void openDatabase() {
+		if (wifiLocationFile == null) {
+			wifiLocationFile = new WifiLocationFile();
+		}
+	}
+	
 	private class MyWLocate extends WLocate {
 
 		public MyWLocate(Context ctx) throws IllegalArgumentException {
@@ -50,6 +102,44 @@ public class BackendService extends LocationBackendService {
 					location.setBearing(cog);
 				}
 				report(location);
+			}
+		}
+	}
+	
+	private class WifiDBResolver implements WifiReceivedCallback {
+
+		@Override
+		public void process(List<String> foundBssids) {
+			
+			if (foundBssids == null || foundBssids.isEmpty()) {
+				return;
+			}
+			if (wifiLocationFile != null) {
+				
+				List<Location> locations = new ArrayList<Location>(foundBssids.size());
+				
+				for (String bssid : foundBssids) {
+					Location result = wifiLocationFile.query(bssid);
+					if (result != null) {
+						locations.add(result);
+					}
+				}
+				
+				if (locations.isEmpty()) {
+					return;
+				}
+				
+				//TODO fix LocationHelper:average to not calculate with null values
+				//TODO sort out wifis obviously in the wrong spot
+				Location avgLoc = LocationHelper.average("owm", locations);
+				
+				if (avgLoc == null) {
+					Log.e(TAG, "Averaging locations did not work.");
+					return;
+				}
+				
+				Log.d(TAG, "Reporting location: " + avgLoc.toString());
+				report(avgLoc);
 			}
 		}
 	}

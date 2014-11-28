@@ -2,7 +2,12 @@ OpenWlanMapNlpBackend
 =====================
 [UnifiedNlp](https://github.com/microg/android_packages_apps_UnifiedNlp) backend that uses [OpenWlanMap](http://www.openwlanmap.org/) to resolve user location.
 
-Location calculation is done online and therefor requires internet connection.
+Location calculation is done either online or offline. This can be switched in the settings.
+Online calculation of course requires internet connection.
+Offline calculation won't use any data, but look up the wifi access points in a database on your sd-card only. 
+To generate the database a shell script (gen_openwifimap_db.sh) is included.
+
+To contribute to the OpenWlanMap database you can use the available Android app or upload your "wardriving" data manually [here](https://openwlanmap.org/upload.php?lang=). Don't forget to enable the "Publish own data" in the Android apps settings!
 
 Building
 --------
