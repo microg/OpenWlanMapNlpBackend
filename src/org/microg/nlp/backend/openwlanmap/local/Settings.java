@@ -6,11 +6,11 @@ import android.os.Bundle;
 public class Settings extends Activity {
 
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        getFragmentManager().beginTransaction().replace(android.R.id.content,
-                                                        new PrefsFragment()).commit();
-    }
+		getFragmentManager().beginTransaction().replace(android.R.id.content,
+														new PrefsFragment()).commit();
+	}
 }
