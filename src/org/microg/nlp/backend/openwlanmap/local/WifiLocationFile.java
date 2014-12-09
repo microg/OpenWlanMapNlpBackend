@@ -24,16 +24,16 @@ public class WifiLocationFile {
     public WifiLocationFile() {
     	openDatabase();
     }
-    
+
     /**
      * DB negative query cache (not found in db).
      */
-    private final LruCache<String, Boolean> queryResultNegativeCache =
+    private LruCache<String, Boolean> queryResultNegativeCache =
             new LruCache<String, Boolean>(1000);
     /**
      * DB positive query cache (found in the db).
      */
-    private final LruCache<String, Location> queryResultCache =
+    private LruCache<String, Location> queryResultCache =
             new LruCache<String, Location>(1000);
 
 
@@ -66,12 +66,27 @@ public class WifiLocationFile {
         return file.getAbsolutePath();
     }
 
+    private void checkForNewDb() {
+        File newDbFile = new File(Configuration.dbLocation + ".new");
+        if (newDbFile.exists() && newDbFile.canRead()) {
+            Log.d(TAG, "New database file detected.");
+            this.close();
+            queryResultCache = new LruCache<String, Location>(1000);
+            queryResultNegativeCache = new LruCache<String, Boolean>(1000);
+            file.renameTo(new File(Configuration.dbLocation + ".bak"));
+            newDbFile.renameTo(new File(Configuration.dbLocation));
+            openDatabase();
+        }
+    }
+
     public synchronized Location query(final String bssid) {
-    	
+
+        checkForNewDb();
+
     	String normalizedBssid = bssid.replace(":", "");
-    	
+
     	Log.d(TAG, "Searching for BSSID '" + normalizedBssid + "'");
-    	
+
         Boolean negative = queryResultNegativeCache.get(normalizedBssid);
         if (negative != null && negative.booleanValue()) return null;
 
@@ -111,17 +126,17 @@ public class WifiLocationFile {
                         	queryResultNegativeCache.put(normalizedBssid, true);
                         	return null;
                         }
-                        
+
                         queryResultCache.put(normalizedBssid, result);
                         Log.d(TAG,"Wifi info found for: " + normalizedBssid);
-                        
+
                         return result;
                 }
             } finally {
                 cursor.close();
             }
 
-            
+
         }
         Log.d(TAG,"No Wifi info found for: " + normalizedBssid);
         queryResultNegativeCache.put(normalizedBssid, true);

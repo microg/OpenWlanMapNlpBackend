@@ -73,4 +73,5 @@ VACUUM;
 #   Push the new database to the phone.
 #
 echo 'Pushing database to phone'
-adb push openwifimap.db /sdcard/.nogapps/openwifimap.db
+adb push openwifimap.db /sdcard/.nogapps/openwifimap.db.x
+adb shell mv /sdcard/.nogapps/openwifimap.db.x /sdcard/.nogapps/openwifimap.db.new
