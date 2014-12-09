@@ -1,4 +1,4 @@
-package org.microg.nlp.backend.openwlanmap.local;
+package org.microg.nlp.backend.openwlanmap;
 
 import android.app.Activity;
 import android.os.Bundle;

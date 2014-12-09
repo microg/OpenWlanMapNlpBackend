@@ -24,14 +24,14 @@
 				<action android:name="org.microg.nlp.LOCATION_BACKEND" />
 			</intent-filter>
 			<meta-data
-                android:name="org.microg.nlp.BACKEND_SETTINGS_ACTIVITY"
-                android:value="org.microg.nlp.backend.openwlanmap.local.Settings" />
+				android:name="org.microg.nlp.BACKEND_SETTINGS_ACTIVITY"
+				android:value="org.microg.nlp.backend.openwlanmap.Settings" />
 		</service>
-        <activity android:name="org.microg.nlp.backend.openwlanmap.local.Settings"
-                  android:label="OpenWlanMap Backend">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
+		<activity android:name="org.microg.nlp.backend.openwlanmap.Settings"
+				  android:label="OpenWlanMap Backend">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
 	</application>
 </manifest>
