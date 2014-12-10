@@ -16,6 +16,7 @@ public class WifiReceiver extends BroadcastReceiver {
 	private boolean scanStarted = false;
 	private WifiManager wifi;
 	private String TAG = WifiReceiver.class.getName();
+	private boolean DEBUG = true;
 	private WifiReceivedCallback callback;
 
 	public WifiReceiver(Context ctx, WifiReceivedCallback aCallback) {
@@ -29,17 +30,23 @@ public class WifiReceiver extends BroadcastReceiver {
 		setScanStarted(false);
 		List<ScanResult> configs = wifi.getScanResults();
 
-		Log.d(TAG, "Got " + configs.size() + " wifi access points");
+		if (DEBUG) Log.d(TAG, "Got " + configs.size() + " wifi access points");
 
 		if (configs.size() > 0) {
-			
+
 			List<String> foundBssids = new ArrayList<String>(configs.size());
-			
+
 			for (ScanResult config : configs) {
 				// some strange devices use a dot instead of :
-				 foundBssids.add(config.BSSID.toUpperCase(Locale.US).replace(".",":"));
+				final String canonicalBSSID = config.BSSID.toUpperCase(Locale.US).replace(".",":");
+				// ignore APs that have _nomap suffix on SSID
+				if (config.SSID.endsWith("_nomap")) {
+					if (DEBUG) Log.d(TAG, "Ignoring AP '" + config.SSID + "' BSSID: " + canonicalBSSID);
+				} else {
+					foundBssids.add(canonicalBSSID);
+				}
 			}
-			
+
 			callback.process(foundBssids);
 		}
 
@@ -52,12 +59,12 @@ public class WifiReceiver extends BroadcastReceiver {
 	public void setScanStarted(boolean scanStarted) {
 		this.scanStarted = scanStarted;
 	}
-	
-	
+
+
 	public interface WifiReceivedCallback {
 
 		void process(List<String> foundBssids);
-		
+
 	}
 
 	public void startScan() {
