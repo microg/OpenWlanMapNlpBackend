@@ -24,16 +24,33 @@ public class BackendService extends LocationBackendService {
 	private WLocate wLocate;
 	private WifiLocationFile wifiLocationFile;
 	private WifiReceiver wifiReceiver;
+	private boolean networkAllowed;
 
 	@Override
 	protected void onOpen() {
 		Log.d(TAG, "onOpen");
-		
+
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		Configuration.fillFromPrefs(sharedPrefs);
 		sharedPrefs.registerOnSharedPreferenceChangeListener(Configuration.listener);
-		
-		if (Configuration.networkAllowed) {
+
+		setOperatingMode();
+	}
+
+	@Override
+	protected void onClose() {
+		Log.d(TAG, "onClose");
+
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPrefs.unregisterOnSharedPreferenceChangeListener(Configuration.listener);
+
+		cleanupOperatingMode();
+
+	}
+
+    private void setOperatingMode() {
+		this.networkAllowed = Configuration.networkAllowed;
+		if (this.networkAllowed) {
 			if (wLocate == null) {
 				wLocate = new MyWLocate(this);
 			} else {
@@ -44,40 +61,39 @@ public class BackendService extends LocationBackendService {
 			if (wifiReceiver == null) {
 				wifiReceiver = new WifiReceiver(this, new WifiDBResolver());
 			}
-			registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));  
+			registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 		}
-	}
+    }
 
-	@Override
-	protected void onClose() {
-		Log.d(TAG, "onClose");
-		
-		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		sharedPrefs.unregisterOnSharedPreferenceChangeListener(Configuration.listener);
-		
+    private void cleanupOperatingMode() {
 		if (wLocate != null) {
 			wLocate.doPause();
 		}
 		if (wifiReceiver != null) {
 			unregisterReceiver(wifiReceiver);
 		}
-		
-	}
+    }
 
 	@Override
 	protected Location update() {
 		Log.d(TAG, "update");
+
+		if (this.networkAllowed != Configuration.networkAllowed) {
+			Log.d(TAG, "Network allowed changed");
+        		cleanupOperatingMode();
+        		setOperatingMode();
+		}
 		if (wLocate != null) {
 			Log.d(TAG, "Requesting location from net");
 			wLocate.wloc_request_position(WLocate.FLAG_NO_GPS_ACCESS);
 			return null;
 		}
-		
+
 		if (wifiReceiver != null) {
 			Log.d(TAG, "Requesting location from db");
 			wifiReceiver.startScan();
 		}
-		
+
 		return null;
 	}
 
@@ -86,7 +102,7 @@ public class BackendService extends LocationBackendService {
 			wifiLocationFile = new WifiLocationFile();
 		}
 	}
-	
+
 	private class MyWLocate extends WLocate {
 
 		public MyWLocate(Context ctx) throws IllegalArgumentException {
@@ -105,39 +121,39 @@ public class BackendService extends LocationBackendService {
 			}
 		}
 	}
-	
+
 	private class WifiDBResolver implements WifiReceivedCallback {
 
 		@Override
 		public void process(List<String> foundBssids) {
-			
+
 			if (foundBssids == null || foundBssids.isEmpty()) {
 				return;
 			}
 			if (wifiLocationFile != null) {
-				
+
 				List<Location> locations = new ArrayList<Location>(foundBssids.size());
-				
+
 				for (String bssid : foundBssids) {
 					Location result = wifiLocationFile.query(bssid);
 					if (result != null) {
 						locations.add(result);
 					}
 				}
-				
+
 				if (locations.isEmpty()) {
 					return;
 				}
-				
+
 				//TODO fix LocationHelper:average to not calculate with null values
 				//TODO sort out wifis obviously in the wrong spot
 				Location avgLoc = LocationHelper.average("owm", locations);
-				
+
 				if (avgLoc == null) {
 					Log.e(TAG, "Averaging locations did not work.");
 					return;
 				}
-				
+
 				Log.d(TAG, "Reporting location: " + avgLoc.toString());
 				report(avgLoc);
 			}

@@ -4,7 +4,7 @@
 	android:versionCode="2"
 	android:versionName="0.0.2"
 	>
-	
+
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -24,15 +24,14 @@
 				<action android:name="org.microg.nlp.LOCATION_BACKEND" />
 			</intent-filter>
 			<meta-data
-                android:name="org.microg.nlp.BACKEND_SETTINGS_ACTIVITY"
-                android:value="org.microg.nlp.backend.openwlanmap.local.Settings" />
+				android:name="org.microg.nlp.BACKEND_SETTINGS_ACTIVITY"
+				android:value="org.microg.nlp.backend.openwlanmap.Settings" />
 		</service>
-        <activity android:name="org.microg.nlp.backend.openwlanmap.local.Settings"
-                  android:label="OpenWlanMap Backend">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+		<activity android:name="org.microg.nlp.backend.openwlanmap.Settings"
+				  android:label="OpenWlanMap Backend">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
 	</application>
 </manifest>
