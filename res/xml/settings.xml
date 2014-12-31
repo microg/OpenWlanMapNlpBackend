@@ -17,4 +17,10 @@
             android:key="assumedAccuracy"
             android:title="@string/title_assumedAccuracy_preference" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_debug_category" >
+        <CheckBoxPreference
+            android:key="debugEnabled"
+            android:title="@string/title_debugEnabled_preference" />
+    </PreferenceCategory>
 </PreferenceScreen>

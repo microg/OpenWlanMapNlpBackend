@@ -39,7 +39,7 @@ public class BackendService extends LocationBackendService {
 
 	@Override
 	protected void onClose() {
-		Log.d(TAG, "onClose");
+		if (Configuration.debugEnabled) Log.d(TAG, "onClose");
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		sharedPrefs.unregisterOnSharedPreferenceChangeListener(Configuration.listener);
@@ -76,21 +76,21 @@ public class BackendService extends LocationBackendService {
 
 	@Override
 	protected Location update() {
-		Log.d(TAG, "update");
+		if (Configuration.debugEnabled) Log.d(TAG, "update");
 
 		if (this.networkAllowed != Configuration.networkAllowed) {
-			Log.d(TAG, "Network allowed changed");
+			if (Configuration.debugEnabled) Log.d(TAG, "Network allowed changed");
         		cleanupOperatingMode();
         		setOperatingMode();
 		}
 		if (wLocate != null) {
-			Log.d(TAG, "Requesting location from net");
+			if (Configuration.debugEnabled) Log.d(TAG, "Requesting location from net");
 			wLocate.wloc_request_position(WLocate.FLAG_NO_GPS_ACCESS);
 			return null;
 		}
 
 		if (wifiReceiver != null) {
-			Log.d(TAG, "Requesting location from db");
+			if (Configuration.debugEnabled) Log.d(TAG, "Requesting location from db");
 			wifiReceiver.startScan();
 		}
 
@@ -111,7 +111,7 @@ public class BackendService extends LocationBackendService {
 
 		@Override
 		protected void wloc_return_position(int ret, double lat, double lon, float radius, short ccode, float cog) {
-			Log.d(TAG, String.format("wloc_return_position ret=%d lat=%f lon=%f radius=%f ccode=%d cog=%f", ret, lat, lon, radius, ccode, cog));
+			if (Configuration.debugEnabled) Log.d(TAG, String.format("wloc_return_position ret=%d lat=%f lon=%f radius=%f ccode=%d cog=%f", ret, lat, lon, radius, ccode, cog));
 			if (ret == WLOC_OK) {
 				Location location = LocationHelper.create("libwlocate", lat, lon, radius);
 				if (cog != -1) {
@@ -154,7 +154,7 @@ public class BackendService extends LocationBackendService {
 					return;
 				}
 
-				Log.d(TAG, "Reporting location: " + avgLoc.toString());
+				if (Configuration.debugEnabled) Log.d(TAG, "Reporting location: " + avgLoc.toString());
 				report(avgLoc);
 			}
 		}

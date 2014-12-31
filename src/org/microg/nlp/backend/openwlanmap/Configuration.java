@@ -15,12 +15,16 @@ public class Configuration {
 	public static float assumedAccuracy;
 	
 	public static ConfigChangedListener listener = new ConfigChangedListener();
+
+	public static boolean debugEnabled;
 	
 
 	public static void fillFromPrefs(SharedPreferences sharedPrefs) {
 
+		debugEnabled = sharedPrefs.getBoolean("debugEnabled", false);
+		
 		networkAllowed = sharedPrefs.getBoolean("networkAllowed", false);
-		Log.d(TAG, "Network allowed: " + networkAllowed);
+		if (debugEnabled) Log.d(TAG, "Network allowed: " + networkAllowed);
 
 		dbLocation = sharedPrefs.getString("databaseLocation", Environment.getExternalStorageDirectory().getAbsolutePath()
 				+ "/.nogapps/openwifimap.db");

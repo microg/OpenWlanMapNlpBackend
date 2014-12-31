@@ -69,7 +69,7 @@ public class WifiLocationFile {
 	private void checkForNewDb() {
 		File newDbFile = new File(Configuration.dbLocation + ".new");
 		if (newDbFile.exists() && newDbFile.canRead()) {
-			Log.d(TAG, "New database file detected.");
+			if (Configuration.debugEnabled) Log.d(TAG, "New database file detected.");
 			this.close();
 			queryResultCache = new LruCache<String, Location>(1000);
 			queryResultNegativeCache = new LruCache<String, Boolean>(1000);
@@ -85,7 +85,7 @@ public class WifiLocationFile {
 
 		String normalizedBssid = bssid.replace(":", "");
 
-		Log.d(TAG, "Searching for BSSID '" + normalizedBssid + "'");
+		if (Configuration.debugEnabled) Log.d(TAG, "Searching for BSSID '" + normalizedBssid + "'");
 
 		Boolean negative = queryResultNegativeCache.get(normalizedBssid);
 		if (negative != null && negative.booleanValue()) return null;
@@ -93,9 +93,8 @@ public class WifiLocationFile {
 		Location cached = queryResultCache.get(normalizedBssid);
 		if (cached != null) return cached;
 
-		//openDatabase();
 		if (database == null) {
-			Log.d(TAG, "Unable to open wifi database file.");
+			if (Configuration.debugEnabled) Log.d(TAG, "Unable to open wifi database file.");
 			return null;
 		}
 
@@ -111,7 +110,7 @@ public class WifiLocationFile {
 							   null,
 							   null);
 		if (cursor != null) {
-			Log.d(TAG,"Database contains " + cursor.getCount() + " entries");
+			if (Configuration.debugEnabled) Log.d(TAG,"Database contains " + cursor.getCount() + " entries");
 			try {
 				if (cursor.getCount() > 0) {
 						cursor.moveToNext();
@@ -122,13 +121,14 @@ public class WifiLocationFile {
 						result.setAccuracy(Configuration.assumedAccuracy);
 
 						if (result.getLatitude() == 0 || result.getLongitude() == 0) {
-							Log.d(TAG, "BSSID '" + bssid + "' returns 0 values for lat or long. Skipped.");
+							//this is the case for bssids where OWM detected a _nomap or other moving AP
+							if (Configuration.debugEnabled) Log.d(TAG, "BSSID '" + bssid + "' returns 0 values for lat or long. Skipped.");
 							queryResultNegativeCache.put(normalizedBssid, true);
 							return null;
 						}
 
 						queryResultCache.put(normalizedBssid, result);
-						Log.d(TAG,"Wifi info found for: " + normalizedBssid);
+						if (Configuration.debugEnabled) Log.d(TAG,"Wifi info found for: " + normalizedBssid);
 
 						return result;
 				}
@@ -138,7 +138,7 @@ public class WifiLocationFile {
 
 
 		}
-		Log.d(TAG,"No Wifi info found for: " + normalizedBssid);
+		if (Configuration.debugEnabled) Log.d(TAG,"No Wifi info found for: " + normalizedBssid);
 		queryResultNegativeCache.put(normalizedBssid, true);
 		return null;
 	}
