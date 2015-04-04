@@ -14,7 +14,7 @@
 
 		<service
 			android:name=".BackendService"
-			android:label="OpenWlanMap Backend"
+			android:label="OpenWlanMap"
 			android:permission="android.permission.ACCESS_COARSE_LOCATION">
 			<intent-filter>
 				<action android:name="org.microg.nlp.LOCATION_BACKEND" />
