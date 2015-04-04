@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="@string/title_network_category" >
+        <CheckBoxPreference
+            android:key="networkAllowed"
+            android:title="@string/title_networkAllowed_preference" />
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/title_local_category"
+        android:key="category_local">
+        <EditTextPreference
+            android:key="databaseLocation"
+            android:title="@string/title_databaseLocation_preference" />
+        <EditTextPreference
+            android:defaultValue="50"
+            android:numeric="integer"
+            android:key="assumedAccuracy"
+            android:title="@string/title_assumedAccuracy_preference" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_debug_category" >
+        <CheckBoxPreference
+            android:key="debugEnabled"
+            android:title="@string/title_debugEnabled_preference" />
+    </PreferenceCategory>
+</PreferenceScreen>

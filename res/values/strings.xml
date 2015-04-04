@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">OpenWlanMapNlpBackend</string>
+	<string name="title_network_category">Network</string>
+	<string name="title_networkAllowed_preference">Allow network activity</string>
+	<string name="title_local_category">Local</string>
+	<string name="title_databaseLocation_preference">Database location</string>
+	<string name="title_assumedAccuracy_preference">Assumed accuracy for database in meters</string>
+	<string name="title_debug_category">Debug</string>
+	<string name="title_debugEnabled_preference">Enable debug log (contains your location)</string>
+	<string name="prefs_error_accuracy_notfloat">The supplied value for assumed accuracy is not a float</string>
 </resources>
